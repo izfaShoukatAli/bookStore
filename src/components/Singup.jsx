@@ -1,15 +1,47 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  replace,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import Login from "./login";
 import { useForm } from "react-hook-form";
-
+import axios from "axios";
+import toast from "react-hot-toast";
 const Singup = () => {
+  const location = useLocation();
+  const Navigate = useNavigate();
+  const from = location.state?.from?.pathname || "/";
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const onSubmit = (data) => console.log(data);
+  const onSubmit = async (data) => {
+    const userInfo = {
+      FullName: data.FullName,
+      Email: data.Email,
+      Password: data.Password,
+    };
+    await axios
+      .post("http://localhost:5001/user/signup", userInfo)
+      .then((res) => {
+        console.log(res.data);
+        if (res.data) {
+          toast.success(" sinpup Successfully!");
+          Navigate(from, { replace: true });
+        }
+        localStorage.setItem("users", JSON.stringify(res.data.user));
+      })
+      .catch((err) => {
+        if (err.response) {
+          console.log(err);
+          toast.error("Singnup Error:" + err.response.data.message);
+        }
+      });
+  };
   return (
     <div className="flex h-screen items-center justify-center ">
       <div className="w-[600px] ">
@@ -31,10 +63,10 @@ const Singup = () => {
                 type="text"
                 placeholder="Enter your fullName"
                 className=" w-80 px-3 py-1 border rounded-md outline-none"
-                {...register("name", { required: true })}
+                {...register("FullName", { required: true })}
               />
               <br />
-              {errors.name && (
+              {errors.FullName && (
                 <span className="text-sm text-red-500">
                   This field is required
                 </span>
@@ -44,13 +76,13 @@ const Singup = () => {
               <span>Email</span>
               <br />
               <input
-                type="email"
+                type="Email"
                 placeholder="Enter your email"
                 className=" w-80 px-3 py-1 border rounded-md outline-none"
-                {...register("email", { required: true })}
+                {...register("Email", { required: true })}
               />
               <br />
-              {errors.email && (
+              {errors.Email && (
                 <span className="text-sm text-red-500">
                   This field is required
                 </span>
@@ -60,10 +92,10 @@ const Singup = () => {
               <span>Password</span>
               <br />
               <input
-                type="password"
+                type="Password"
                 placeholder="Enter your password"
                 className=" w-80 px-3 py-1 border rounded-md outline-none"
-                {...register("password", { required: true })}
+                {...register("Password", { required: true })}
               />
               <br />
               {errors.password && (
